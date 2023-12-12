@@ -10,12 +10,10 @@ export const handler: S3Handler = async (event: S3Event) => {
 
   try {
     for (const s3Object of event.Records) {
-      const label = s3Object.eventName.includes('ObjectCreated')
-      
       if (s3Object.eventName.includes('ObjectCreated')) {
         await tryCreateOrUpdate(s3Object)
       } else if (s3Object.eventName.includes('ObjectRemoved')) {
-        await tryRemoveRecord(s3Object)
+        await tryRemove(s3Object)
       }
     }
   } catch (error) {
@@ -35,8 +33,6 @@ const tryCreateOrUpdate = async (s3Object: S3EventRecord) => {
 
     const data: HeadObjectOutput = await s3.headObject(params).promise()
 
-    console.log('DATA', JSON.stringify(data, null, 2))
-
     const record: Record = {
       id: keySegments[1],
       name: data.Metadata!['record-name'] ?? null,
@@ -51,17 +47,17 @@ const tryCreateOrUpdate = async (s3Object: S3EventRecord) => {
     await upsertRecord(record)
   } catch (error) {
     console.error('Error inserting S3 object:', error)
-    console.error(s3Object)
+    console.error('S3 OBJECT', JSON.stringify(s3Object, null, 2))
   }
 }
 
-const tryRemoveRecord = async (s3Object: S3EventRecord) => {
+const tryRemove = async (s3Object: S3EventRecord) => {
   try {
     const objectKey = s3Object.s3.object.key
     const keySegments = objectKey.split('/')
     await removeRecord(keySegments[1])
   } catch (error) {
     console.error('Error removing S3 object:', error, s3Object)
-    console.error(s3Object)
+    console.error('S3 OBJECT', JSON.stringify(s3Object, null, 2))
   }
 }

@@ -32,8 +32,8 @@ export async function upsertRecord(record: Record) {
       ${record.owner},
       ${record.type},
       ${record.expirationAt},
-      CURRENT_TIMESTAMP
-      NULL,
+      CURRENT_TIMESTAMP,
+      NULL
     )
     ON CONFLICT (id) DO UPDATE
       SET name = EXCLUDED.name,
@@ -48,5 +48,5 @@ export async function upsertRecord(record: Record) {
 }
 
 export async function removeRecord(id: string) {
-  await sql`DELETE FROM TABLE records WHERE id = ${id};`
+  await sql`DELETE FROM records WHERE id = ${id};`
 }
