@@ -4,6 +4,9 @@ on:
   release:
     types: [created]
 
+env:
+  lambda: S3ObjectSyncing
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -43,5 +46,5 @@ jobs:
       - name: Deploy to Lambda
         run: |
           DESCRIPTION="${{ env.DESCRIPTION }}"
-          aws lambda update-function-configuration --function-name S3ObjectSyncing --description "$DESCRIPTION"
-          aws lambda update-function-code --function-name S3ObjectSyncing --zip-file fileb://out/archive.zip
+          aws lambda update-function-configuration --function-name ${{ env.lambda }} --description "$DESCRIPTION"
+          aws lambda update-function-code --function-name ${{ env.lambda }} --zip-file fileb://out/archive.zip
