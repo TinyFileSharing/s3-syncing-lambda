@@ -1,0 +1,47 @@
+name: AWS Lambda Deploy
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: 14
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Package
+        run: npm run package
+
+      - name: AWS CLI Login
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-west-2
+
+      - name: Create Description
+        id: create_description
+        run: |
+          RELEASE_NAME=$(echo ${GITHUB_REF#refs/tags/})
+          CURRENT_DATETIME=$(date +'%Y-%m-%d %H:%M:%S')
+          echo "DESCRIPTION=Release $RELEASE_NAME, deployed on $CURRENT_DATETIME by GitHub Actions" >> $GITHUB_ENV
+
+      - name: Deploy to Lambda
+        run: |
+          DESCRIPTION="${{ env.DESCRIPTION }}"
+          aws lambda update-function-configuration --function-name S3ObjectSyncing --description "$DESCRIPTION"
+          aws lambda update-function-code --function-name S3ObjectSyncing --zip-file fileb://out/archive.zip
