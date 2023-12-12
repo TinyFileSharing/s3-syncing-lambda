@@ -39,7 +39,6 @@ export async function upsertRecord(record: Record) {
       SET name = EXCLUDED.name,
           size = EXCLUDED.size,
           owner = EXCLUDED.owner,
-          author = EXCLUDED.author,
           type = EXCLUDED.type,
           expiration_at = EXCLUDED.expiration_at,
           created_at = EXCLUDED.created_at,
